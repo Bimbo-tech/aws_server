@@ -14,10 +14,10 @@ provider "aws" {
 
 
 resource "aws_instance" "monitor_instance" {
-  ami           = "ami-0905a3c97561e0b69"
-  instance_type = "t2.micro"
-  subnet_id = aws_subnet.main_a.id
-  vpc_security_group_ids   = [aws_security_group.security.id]
+  ami                         = "ami-0905a3c97561e0b69"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.main_a.id
+  vpc_security_group_ids      = [aws_security_group.security.id]
   associate_public_ip_address = true
 
   tags = {
@@ -63,11 +63,11 @@ resource "aws_route_table_association" "monitoring-a" {
 
 #securitygroup using Terraform
 resource "aws_security_group" "security" {
-  name        = "security-group"
-  vpc_id      = aws_vpc.main.id
+  name   = "security-group"
+  vpc_id = aws_vpc.main.id
 
   ingress {
-    description = "Allow SSH"
+    description      = "Allow SSH"
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
@@ -76,7 +76,7 @@ resource "aws_security_group" "security" {
   }
 
   ingress {
-    description = "Allow traffic to Prometheus server (port 9090 by default)"
+    description      = "Allow traffic to Prometheus server (port 9090 by default)"
     from_port        = 9090
     to_port          = 9090
     protocol         = "tcp"
@@ -85,7 +85,7 @@ resource "aws_security_group" "security" {
   }
 
   ingress {
-    description = "Allow traffic to Grafana (port 3000 by default)"
+    description      = "Allow traffic to Grafana (port 3000 by default)"
     from_port        = 3000
     to_port          = 3000
     protocol         = "tcp"
@@ -94,7 +94,7 @@ resource "aws_security_group" "security" {
   }
 
   egress {
-    description = "Allow all outbound traffic"
+    description      = "Allow all outbound traffic"
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
@@ -102,24 +102,24 @@ resource "aws_security_group" "security" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
-    ingress {
-    description      = "prometheus Node Exporter"
-    from_port        = 9100
-    to_port          = 9100
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+  ingress {
+    description = "prometheus Node Exporter"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
     # ipv6_cidr_blocks = ["::/0"]
   }
 
   ingress {
-    description      = "http"
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    description = "http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
     # ipv6_cidr_blocks = ["::/0"]
 
-  }  
+  }
 
 }
 
