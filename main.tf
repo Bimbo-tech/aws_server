@@ -16,14 +16,48 @@ provider "aws" {
 resource "aws_instance" "monitor_instance" {
   ami           = "ami-0905a3c97561e0b69"
   instance_type = "t2.micro"
-  subnet_id = aws_subnet.main_a.id
+  subnet_id = aws_subnet.public_subnet.id
+  #ubnet_id = aws_subnet.main_a.id
   vpc_security_group_ids   = [aws_security_group.security.id]
   associate_public_ip_address = true
+   key_name = "monitor"
+
+ connection {
+    user        = "ubuntu"
+    host = self.public_ip
+    private_key = file("/Users/abimbolaogungbe/Downloads/monitor.pem")
+
+
+  }
+
+  #provisioner "file" {
+    #source      = "/Users/abimbolaogungbe/Downloads/monitor.pem"
+   # destination = "/home/.ssh/ubuntu/monitor.pem"
+  
+
+
+   # Install ansible in the ubuntu
+    provisioner "remote-exec" {
+     inline = [
+        "sudo apt update",
+        "sudo apt-get install -y software-properties-common",
+        "sudo apt-add-repository --yes --update ppa:ansible/ansible",
+        "sudo apt-get install -y ansible",
+      ]
+     } 
+    provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -u ubuntu -i '${self.public_ip},' --private-key /Users/abimbolaogungbe/Downloads/monitor.pem /Users/abimbolaogungbe/Documents/ansible/playbook.yaml"
+    
+        
+       
+    }
+
 
   tags = {
     Name = "MonitorInstance"
   }
 }
+
 
 #creating a VPC
 
@@ -40,7 +74,7 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public_subnet" {
   vpc_id     = aws_vpc.main.id
-  cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, 0)
+  cidr_block = "10.0.1.0/24"
   availability_zone = "eu-west-1a"
   map_public_ip_on_launch = true
 
@@ -50,7 +84,7 @@ resource "aws_subnet" "public_subnet" {
 }
 resource "aws_subnet" "private_subnet" {
   vpc_id     = aws_vpc.main.id
-  cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, 0) 
+  cidr_block = "10.0.2.0/24" 
   availability_zone = "eu-west-1b"
   
   tags = {
@@ -84,7 +118,8 @@ resource "aws_route_table" "public" {
 #creating route_table_association
 
 resource "aws_route_table_association" "monitoring-a" {
-  subnet_id      = aws_subnet.main_a.id
+  #subnet_id      = aws_subnet.main_a.id
+    subnet_id       = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -149,10 +184,10 @@ resource "aws_security_group" "security" {
     # ipv6_cidr_blocks = ["::/0"]
 
   }  
+    
 
+ 
 }
-
-
 
 
 
